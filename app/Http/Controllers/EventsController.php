@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -13,6 +14,7 @@ class EventsController extends BaseController
 {
     public function getWarmupEvents() {
         return Event::all();
+
     }
 
     /* TODO: complete getEventsWithWorkshops so that it returns all events including the workshops
@@ -101,7 +103,15 @@ class EventsController extends BaseController
      */
 
     public function getEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 1');
+
+        $events = Event::with('workshops')->get();
+
+       /* foreach ($events as $event){
+            dd($event);
+        }*/
+
+        return response()->json($events);
+
     }
 
 
@@ -179,6 +189,32 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+
+
+        $now = Carbon::now();
+
+        $currentDateTime = Carbon::now();
+
+        $events = Event::with(['workshops' => function ($query) {
+            $query->orderBy('start', 'asc');
+        }])
+            ->whereHas('workshops', function ($query) use ($currentDateTime) {
+                $query->where('start', '>', $currentDateTime);
+            })
+            ->get();
+
+        $response = [];
+        foreach ($events as $event) {
+            $response[] = [
+                'id' => $event->id,
+                'name' => $event->name,
+                'created_at' => $event->created_at,
+                'updated_at' => $event->updated_at,
+                'workshops' => $event->workshops
+            ];
+        }
+
+        return response()->json($response);
+
     }
 }

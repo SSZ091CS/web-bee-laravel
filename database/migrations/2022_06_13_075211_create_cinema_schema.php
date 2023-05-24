@@ -34,9 +34,77 @@ class CreateCinemaSchema extends Migration
      * As a user I want to know where I'm sitting on my ticket
      * As a cinema owner I dont want to configure the seating for every show
      */
+
+
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
-        throw new \Exception('implement in coding task 4, you can ignore this exception if you are just running the initial migrations.');
+        // Movies table
+        Schema::create('movies', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->integer('duration');
+            $table->string('rating');
+            $table->timestamps();
+        });
+
+        // Shows table
+        Schema::create('shows', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_id');
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->boolean('is_booked_out')->default(false);
+            $table->timestamps();
+        });
+
+        // Prices table
+        Schema::create('prices', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('show_id');
+            $table->decimal('price', 8, 2);
+            $table->timestamps();
+        });
+
+        // Seat types table
+        Schema::create('seat_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->timestamps();
+        });
+
+        // Seats table
+        Schema::create('seats', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('show_id');
+            $table->foreignId('seat_type_id');
+            $table->string('seat_number');
+            $table->boolean('is_available')->default(true);
+            $table->timestamps();
+        });
+
+        // Bookings table
+        Schema::create('bookings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('show_id');
+            $table->foreignId('seat_id');
+            $table->string('user_name');
+            $table->string('user_email');
+            $table->timestamps();
+        });
+
+        // Tickets table
+        Schema::create('tickets', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('booking_id');
+            $table->string('ticket_number');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -46,5 +114,20 @@ class CreateCinemaSchema extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('tickets');
+
+        Schema::dropIfExists('bookings');
+
+        Schema::dropIfExists('seats');
+
+        Schema::dropIfExists('seat_types');
+
+        Schema::dropIfExists('prices');
+
+        Schema::dropIfExists('shows');
+
+        Schema::dropIfExists('movies');
     }
 }
+
+
